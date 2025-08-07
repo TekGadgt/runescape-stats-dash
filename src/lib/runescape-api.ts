@@ -65,38 +65,38 @@ export const SKILL_NAMES = [
   'Construction'
 ];
 
-export const RS3_SKILL_NAMES = [
-  'Overall',
-  'Attack',
-  'Defence',
-  'Strength',
-  'Constitution',
-  'Ranged',
-  'Prayer',
-  'Magic',
-  'Cooking',
-  'Woodcutting',
-  'Fletching',
-  'Fishing',
-  'Firemaking',
-  'Crafting',
-  'Smithing',
-  'Mining',
-  'Herblore',
-  'Agility',
-  'Thieving',
-  'Slayer',
-  'Farming',
-  'Runecraft',
-  'Hunter',
-  'Construction',
-  'Summoning',
-  'Dungeoneering',
-  'Divination',
-  'Invention',
-  'Archaeology',
-  'Necromancy'
-];
+// Skill ID to name mapping based on RuneScape 3 API documentation
+export const RS3_SKILL_NAMES: { [key: number]: string } = {
+  0: 'Attack',
+  1: 'Defence',
+  2: 'Strength',
+  3: 'Constitution',
+  4: 'Ranged',
+  5: 'Prayer',
+  6: 'Magic',
+  7: 'Cooking',
+  8: 'Woodcutting',
+  9: 'Fletching',
+  10: 'Fishing',
+  11: 'Firemaking',
+  12: 'Crafting',
+  13: 'Smithing',
+  14: 'Mining',
+  15: 'Herblore',
+  16: 'Agility',
+  17: 'Thieving',
+  18: 'Slayer',
+  19: 'Farming',
+  20: 'Runecrafting',
+  21: 'Hunter',
+  22: 'Construction',
+  23: 'Summoning',
+  24: 'Dungeoneering',
+  25: 'Divination',
+  26: 'Invention',
+  27: 'Archaeology',
+  28: 'Necromancy'
+};
 
 export async function fetchRS3Stats(username: string): Promise<RS3Stats> {
   try {
@@ -108,19 +108,37 @@ export async function fetchRS3Stats(username: string): Promise<RS3Stats> {
     const response = await fetch(proxyUrl);
     
     if (!response.ok) {
-      throw new Error('Failed to fetch RS3 stats');
+      throw new Error(`HTTP ${response.status}: Failed to fetch RS3 stats`);
     }
     
     const data = await response.json();
+    
+    // Check if the proxy returned an error
+    if (data.status && data.status.http_code && data.status.http_code !== 200) {
+      throw new Error(`RuneScape API returned HTTP ${data.status.http_code}`);
+    }
+    
+    if (!data.contents) {
+      throw new Error('No data returned from RuneScape API');
+    }
+    
     const stats = JSON.parse(data.contents);
     
     // Handle the case where the profile doesn't exist or has an error
     if (stats.error) {
-      throw new Error(stats.error);
+      throw new Error(`Profile not found: ${stats.error}`);
+    }
+    
+    // Validate that we have the expected data structure
+    if (!stats.name || !stats.skillvalues) {
+      throw new Error('Invalid data structure returned from API');
     }
     
     return stats;
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error('Invalid JSON response from RuneScape API');
+    }
     if (error instanceof Error) {
       throw new Error(`RS3 API Error: ${error.message}`);
     }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,29 +114,6 @@ function App() {
           </CardHeader>
         </Card>
 
-        {/* Combat Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Combat Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">{rs3Stats.melee}</div>
-                <div className="text-sm text-muted-foreground">Melee</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">{rs3Stats.magic}</div>
-                <div className="text-sm text-muted-foreground">Magic</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{rs3Stats.ranged}</div>
-                <div className="text-sm text-muted-foreground">Ranged</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Skills Grid */}
         <Card>
           <CardHeader>
@@ -191,7 +168,7 @@ function App() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+        </Card>
         )}
       </div>
     );
@@ -242,7 +219,7 @@ function App() {
                       <Progress value={progress} className="h-2" />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>{formatNumber(skill.xp)} XP</span>
-                        <span>#{formatNumber(skill.rank)}</span>
+                        <span>%{formatNumber(skill.rank)}</span>
                       </div>
                     </div>
                   </div>

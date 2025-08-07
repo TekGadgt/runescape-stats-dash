@@ -9,10 +9,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+
       - name: Deploy with gh-pages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          npm run build
           npx gh-pages -d dist -u "github-actions-bot <support+actions@github.com>"

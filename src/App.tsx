@@ -158,7 +158,7 @@ function App() {
                       <Progress value={progress} className="h-2" />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>{formatNumber(skill.xp)} XP</span>
-                        <span>#{formatNumber(skill.rank)}</span>
+                        <span>%{formatNumber(skill.rank)}</span>
                       </div>
                     </div>
                   </div>

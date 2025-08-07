@@ -99,35 +99,64 @@ export const RS3_SKILL_NAMES = [
 ];
 
 export async function fetchRS3Stats(username: string): Promise<RS3Stats> {
-  const response = await fetch(
-    `https://apps.runescape.com/runemetrics/profile/profile?user=${encodeURIComponent(username)}&activities=20`
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch RS3 stats');
+  try {
+    // Use a CORS proxy service to bypass CORS restrictions
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+      `https://apps.runescape.com/runemetrics/profile/profile?user=${encodeURIComponent(username)}&activities=20`
+    )}`;
+    
+    const response = await fetch(proxyUrl);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch RS3 stats');
+    }
+    
+    const data = await response.json();
+    const stats = JSON.parse(data.contents);
+    
+    // Handle the case where the profile doesn't exist or has an error
+    if (stats.error) {
+      throw new Error(stats.error);
+    }
+    
+    return stats;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`RS3 API Error: ${error.message}`);
+    }
+    throw new Error('Unknown error fetching RS3 stats');
   }
-  
-  return response.json();
 }
 
 export async function fetchOSRSStats(username: string): Promise<OSRSStats> {
-  const response = await fetch(
-    `https://secure.runescape.com/m=hiscore_oldschool/index_lite.json?player=${encodeURIComponent(username)}`
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch OSRS stats');
+  try {
+    // Use a CORS proxy service to bypass CORS restrictions
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+      `https://secure.runescape.com/m=hiscore_oldschool/index_lite.json?player=${encodeURIComponent(username)}`
+    )}`;
+    
+    const response = await fetch(proxyUrl);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch OSRS stats');
+    }
+    
+    const proxyData = await response.json();
+    const data = JSON.parse(proxyData.contents);
+    
+    // Convert the array format to our skill structure
+    const skills = data.skills.map((skill: any, index: number) => ({
+      name: SKILL_NAMES[index] || `Skill ${index}`,
+      rank: skill.rank,
+      level: skill.level,
+      xp: skill.xp
+    }));
+    
+    return { skills };
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`OSRS API Error: ${error.message}`);
+    }
+    throw new Error('Unknown error fetching OSRS stats');
   }
-  
-  const data = await response.json();
-  
-  // Convert the array format to our skill structure
-  const skills = data.skills.map((skill: any, index: number) => ({
-    name: SKILL_NAMES[index] || `Skill ${index}`,
-    rank: skill.rank,
-    level: skill.level,
-    xp: skill.xp
-  }));
-  
-  return { skills };
 }

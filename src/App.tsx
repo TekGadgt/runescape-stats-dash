@@ -34,28 +34,31 @@ function App() {
     setError(null);
 
     try {
-      const promises = [];
-      
       if (activeGame === 'rs3') {
-        promises.push(fetchRS3Stats(targetUsername));
+        const stats = await fetchRS3Stats(targetUsername);
+        setRS3Stats(stats);
       } else {
-        promises.push(fetchOSRSStats(targetUsername));
-      }
-
-      const [stats] = await Promise.all(promises);
-
-      if (activeGame === 'rs3') {
-        setRS3Stats(stats as RS3Stats);
-      } else {
-        setOSRSStats(stats as OSRSStats);
+        const stats = await fetchOSRSStats(targetUsername);
+        setOSRSStats(stats);
       }
 
       setUsername(targetUsername);
       setInputUsername('');
       toast.success(`Loaded ${targetUsername}'s ${activeGame.toUpperCase()} stats`);
     } catch (err) {
-      setError(`Failed to load stats: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      toast.error('Failed to load player stats');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      
+      // Check for common error types and provide helpful messages
+      if (errorMessage.includes('not found') || errorMessage.includes('Profile not found')) {
+        setError(`Player "${targetUsername}" not found. Please check the username and try again.`);
+        toast.error('Player not found');
+      } else if (errorMessage.includes('NetworkError') || errorMessage.includes('fetch')) {
+        setError('Network error - please check your connection and try again.');
+        toast.error('Connection failed');
+      } else {
+        setError(`Failed to load stats: ${errorMessage}`);
+        toast.error('Failed to load player stats');
+      }
     } finally {
       setLoading(false);
     }
